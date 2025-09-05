@@ -1,0 +1,103 @@
+{
+  "act": 1,
+  "title": "Finding Your Stage Legs",
+  "description": "Master the fundamentals of touch typing through theatrical exercises",
+  "scenes": [
+    {
+      "id": "table-read",
+      "name": "Table Read",
+      "description": "Get comfortable with the home row keys",
+      "warmUp": "Place your fingers on the home row: ASDF JKL;",
+      "exercises": [
+        {
+          "id": "home-position",
+          "title": "Finding Your Mark",
+          "script": "asdf jkl; asdf jkl; asdf jkl;",
+          "targetTempo": 20,
+          "targetAccuracy": 90,
+          "tips": "Rest your fingers lightly on these keys - they're your home base"
+        },
+        {
+          "id": "home-words",
+          "title": "First Lines",
+          "script": "sad fad lad ask flask salad",
+          "targetTempo": 25,
+          "targetAccuracy": 85,
+          "tips": "These words use only home row keys"
+        },
+        {
+          "id": "home-sentences",
+          "title": "Opening Monologue",
+          "script": "A sad lad asks dad. Flask falls; salad fades.",
+          "targetTempo": 30,
+          "targetAccuracy": 85,
+          "tips": "Your first complete sentences!"
+        }
+      ]
+    },
+    {
+      "id": "blocking",
+      "name": "Blocking Rehearsal",
+      "description": "Learn to move beyond the home row",
+      "warmUp": "Reach up to QWER UIOP and back to home",
+      "exercises": [
+        {
+          "id": "upper-reach",
+          "title": "Reaching for the Stars",
+          "script": "qwer uiop qwer uiop asdf jkl;",
+          "targetTempo": 20,
+          "targetAccuracy": 85,
+          "tips": "Always return to home position after reaching"
+        },
+        {
+          "id": "upper-words",
+          "title": "Elevated Dialogue",
+          "script": "we are here for our play today",
+          "targetTempo": 30,
+          "targetAccuracy": 85,
+          "tips": "Common words using upper row keys"
+        },
+        {
+          "id": "upper-mix",
+          "title": "Full Stage Movement",
+          "script": "The quick red fox jumped over the lazy brown dog",
+          "targetTempo": 35,
+          "targetAccuracy": 85,
+          "tips": "Combining home and upper rows smoothly"
+        }
+      ]
+    },
+    {
+      "id": "costume-fitting",
+      "name": "Costume Fitting",
+      "description": "Add the lower row to your repertoire",
+      "warmUp": "Drop down to ZXCV NM,. and return",
+      "exercises": [
+        {
+          "id": "lower-intro",
+          "title": "Finding Your Foundation",
+          "script": "zxcv nm,. zxcv nm,. asdf jkl;",
+          "targetTempo": 20,
+          "targetAccuracy": 85,
+          "tips": "The lower row completes your keyboard coverage"
+        },
+        {
+          "id": "lower-words",
+          "title": "Grounded Performance",
+          "script": "move can zoom next mix come",
+          "targetTempo": 30,
+          "targetAccuracy": 85,
+          "tips": "Words featuring lower row letters"
+        },
+        {
+          "id": "full-keyboard",
+          "title": "The Complete Performer",
+          "script": "The quick brown fox jumps over the lazy dog.",
+          "targetTempo": 40,
+          "targetAccuracy": 90,
+          "tips": "The famous pangram uses every letter!"
+        }
+      ]
+    }
+  ]
+}
