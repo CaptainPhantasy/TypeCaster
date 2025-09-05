@@ -32,3 +32,8 @@ playwright/.cache/
 .env
 .env.local
 .env.production
+
+# Prevent coding agents from creating nested projects
+type-casting/
+**/dist/
+**/.DS_Store
