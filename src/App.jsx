@@ -156,7 +156,7 @@ function Theatre() {
     const isLastExercise = currentExercise === scene.exercises.length - 1;
     const isLastScene = currentScene === actOneScripts.scenes.length - 1;
     
-    // Issue 3: Auto-dismiss review after 5 seconds (shortened to improve UX)
+    // Issue 3: Auto-dismiss review after 3 seconds for faster pacing
     const timer = reliableSetTimeout(() => {
       console.log('Review auto-dismissing after timeout');
       setShowReview(false);
@@ -165,9 +165,9 @@ function Theatre() {
       if (!isLastScene) {
         setTimeout(() => {
           handleNextScene();
-        }, 500);
+        }, 300);
       }
-    }, 5000);
+    }, 3000);
     setReviewAutoDismissTimer(timer);
     
     actions.addReview(review);
@@ -540,15 +540,11 @@ function Theatre() {
               </div>
               
               <p className="text-yellow-200 text-xl mb-6 leading-relaxed">
-                Scene completed! Continuing in 3 seconds...
+                Exercise completed! Continuing...
               </p>
               
               <div className="text-yellow-400/70 text-sm font-medium tracking-wider uppercase">
                 The show must go on!
-              </div>
-              
-              <div className="text-yellow-400/50 text-xs mt-2">
-                (Press any key to continue now)
               </div>
               
               <div className="mt-6 flex justify-center space-x-2">
