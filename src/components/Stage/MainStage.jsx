@@ -20,7 +20,9 @@ const MainStage = ({
   const [celebrationType, setCelebrationType] = useState('applause');
   const [spotlightPosition, setSpotlightPosition] = useState(0);
   const [showInstructions, setShowInstructions] = useState(() => {
-    return localStorage.getItem('typecasting-instructions-seen') !== 'true';
+    // Disabled redundant overlay - tutorial is handled elsewhere
+    return false;
+    // return localStorage.getItem('typecasting-instructions-seen') !== 'true';
   });
   // isPaused now comes from props
   const [inputFocused, setInputFocused] = useState(false);

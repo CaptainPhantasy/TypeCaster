@@ -5,11 +5,11 @@ const TutorialOverlay = ({ onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Check if tutorial has been seen before
-    const tutorialSeen = localStorage.getItem('typeCastingTutorialSeen');
-    if (!tutorialSeen) {
-      setIsVisible(true);
-    }
+    // Disabled automatic display - only show when explicitly requested
+    // const tutorialSeen = localStorage.getItem('typeCastingTutorialSeen');
+    // if (!tutorialSeen) {
+    //   setIsVisible(true);
+    // }
   }, []);
 
   const handleDismiss = () => {
