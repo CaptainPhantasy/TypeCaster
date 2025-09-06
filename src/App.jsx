@@ -135,12 +135,20 @@ function Theatre() {
     setLastPerformance(performance);
     setShowReview(true);
     
+    // Check if this is the last exercise in the scene
+    const isLastExercise = currentExercise === scene.exercises.length - 1;
+    const isLastScene = currentScene === actOneScripts.scenes.length - 1;
+    
     // Issue 3: Auto-dismiss review after 10 seconds if no interaction  
     // Issue 33: Use reliable timer instead of setTimeout
     const timer = reliableSetTimeout(() => {
       console.log('Review auto-dismissing after timeout');
       setShowReview(false);
-      setShowPressAnyKey(true); // Issue 4: Show press any key prompt
+      // Only show "Press Any Key" prompt when completing the last exercise of a scene
+      // or when completing the entire act
+      if (isLastExercise || isLastScene) {
+        setShowPressAnyKey(true); // Issue 4: Show press any key prompt
+      }
     }, 10000);
     setReviewAutoDismissTimer(timer);
     

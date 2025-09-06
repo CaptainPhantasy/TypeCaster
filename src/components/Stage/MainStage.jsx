@@ -61,13 +61,26 @@ const MainStage = ({
     };
   }, []);
 
-  // Reset celebration when script changes (new scene)
+  // Reset all state when script changes (new scene/exercise)
   useEffect(() => {
+    console.log('Script changed, resetting MainStage state');
     setShowCelebration(false);
+    setTypedText('');
+    setCurrentIndex(0);
+    setMistakes(new Set());
+    setLastSpaceTime(0);
+    startTimeRef.current = Date.now();
+    
     if (celebrationTimeoutRef.current) {
       clearTimeout(celebrationTimeoutRef.current);
     }
-  }, [currentScript]);
+    
+    // Reset performance and maintain focus for the new exercise
+    actions.resetPerformance();
+    if (!isPaused) {
+      setTimeout(maintainInputFocus, 100);
+    }
+  }, [currentScript, actions, maintainInputFocus, isPaused]);
 
   useEffect(() => {
     if (state.production.curtainsOpen && inputRef.current) {
