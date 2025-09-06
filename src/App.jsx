@@ -70,6 +70,7 @@ function Theatre() {
   const [showPressAnyKey, setShowPressAnyKey] = useState(false);
   const [pressAnyKeyTimer, setPressAnyKeyTimer] = useState(null);
   const [showContinuationCode, setShowContinuationCode] = useState(false);
+  const [completionProcessed, setCompletionProcessed] = useState(false);
 
   // Issue 17: Show tutorial automatically for first-time users
   useEffect(() => {
@@ -114,7 +115,15 @@ function Theatre() {
   };
 
   const handleSceneComplete = (performance) => {
+    // Prevent multiple processing of the same completion
+    if (completionProcessed) {
+      console.log('Scene completion already processed, ignoring duplicate call');
+      return;
+    }
+    
     console.log('FIXING ISSUE 3: Review Auto-Dismiss');
+    setCompletionProcessed(true);
+    
     const scene = actOneScripts.scenes[currentScene];
     const exercise = scene.exercises[currentExercise];
     
@@ -135,27 +144,30 @@ function Theatre() {
     setLastPerformance(performance);
     setShowReview(true);
     
+    // Clear any existing timers first
+    if (reviewAutoDismissTimer) {
+      reliableClearTimeout(reviewAutoDismissTimer);
+    }
+    if (pressAnyKeyTimer) {
+      reliableClearTimeout(pressAnyKeyTimer);
+    }
+    
     // Check if this is the last exercise in the scene
     const isLastExercise = currentExercise === scene.exercises.length - 1;
     const isLastScene = currentScene === actOneScripts.scenes.length - 1;
     
-    // Issue 3: Auto-dismiss review after 10 seconds if no interaction  
-    // Issue 33: Use reliable timer instead of setTimeout
+    // Issue 3: Auto-dismiss review after 5 seconds (shortened to improve UX)
     const timer = reliableSetTimeout(() => {
       console.log('Review auto-dismissing after timeout');
       setShowReview(false);
-      // Only show "Press Any Key" prompt when completing the last exercise of a scene
-      // or when completing the entire act
-      if (isLastExercise || isLastScene) {
-        setShowPressAnyKey(true); // Issue 4: Show press any key prompt
-        // Auto-dismiss after 3 seconds for better UX
-        const pressKeyTimer = reliableSetTimeout(() => {
-          setShowPressAnyKey(false);
-          setPressAnyKeyTimer(null);
-        }, 3000);
-        setPressAnyKeyTimer(pressKeyTimer);
+      // For better UX, skip the "Press Any Key" prompt and go directly to next exercise
+      // This prevents interrupting the flow
+      if (!isLastScene) {
+        setTimeout(() => {
+          handleNextScene();
+        }, 500);
       }
-    }, 10000);
+    }, 5000);
     setReviewAutoDismissTimer(timer);
     
     actions.addReview(review);
@@ -170,6 +182,7 @@ function Theatre() {
     const scene = actOneScripts.scenes[currentScene];
     setShowReview(false);
     setShowPressAnyKey(false);
+    setCompletionProcessed(false); // Reset for next exercise
     
     // Clear auto-dismiss timers
     if (reviewAutoDismissTimer) {
@@ -222,6 +235,7 @@ function Theatre() {
     }
     setShowReview(false);
     setShowPressAnyKey(false);
+    setCompletionProcessed(false); // Reset for retry
     handleReset();
   };
 
@@ -239,6 +253,7 @@ function Theatre() {
       setTimeout(() => {
         setCurrentScene(sceneIndex);
         setCurrentExercise(exerciseIndex);
+        setCompletionProcessed(false); // Reset for new exercise
         actions.resetPerformance(); // Reset performance when navigating
         
         setTimeout(() => {
