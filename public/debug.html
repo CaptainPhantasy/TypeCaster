@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeCasting Debug</title>
+</head>
+<body>
+    <h1>TypeCasting Debug Page</h1>
+    <p>Open the browser console (F12) and then click the button below to test the app</p>
+    <button onclick="window.location.href='/'">Go to App</button>
+    
+    <script>
+        console.log("Debug page loaded. Monitoring for errors...");
+        
+        window.addEventListener('error', function(event) {
+            console.error('Global error caught:', {
+                message: event.message,
+                source: event.filename,
+                line: event.lineno,
+                column: event.colno,
+                error: event.error
+            });
+        });
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+        });
+    </script>
+</body>
+</html>

@@ -18,10 +18,12 @@ const initialState = {
     stageDirectionsVisible: true,
     stageDirectionsOpacity: 1.0,
     inPanicMode: false,
+    panicModeTriggered: false,
     currentLine: "",
     rehearsalNotes: [],
     characterCount: 0,
     errorCount: 0,
+    consecutiveErrors: 0,
     noLookStreak: 0,
     currentCharIndex: 0
   },
@@ -34,6 +36,7 @@ const initialState = {
     repertoire: [],
     reviews: [],
     backstagePass: null,
+    continuationCode: null,
     personalBest: {
       tempo: 0,
       accuracy: 0,
@@ -94,7 +97,7 @@ const theatreReducer = (state, action) => {
         }
       };
     
-    case 'END_PERFORMANCE':
+    case 'END_PERFORMANCE': {
       const finalAccuracy = state.performance.characterCount > 0 
         ? ((state.performance.characterCount - state.performance.errorCount) / state.performance.characterCount * 100)
         : 0;
@@ -107,6 +110,7 @@ const theatreReducer = (state, action) => {
           accuracy: finalAccuracy
         }
       };
+    }
     
     case 'UPDATE_TEMPO':
       return {
@@ -136,6 +140,24 @@ const theatreReducer = (state, action) => {
         }
       };
     
+    case 'GENERATE_CODE':
+      return {
+        ...state,
+        actor: {
+          ...state.actor,
+          continuationCode: action.payload
+        }
+      };
+      
+    case 'LOAD_FROM_CODE':
+      return {
+        ...action.payload,
+        production: {
+          ...action.payload.production,
+          curtainsOpen: false // Start with curtains closed
+        }
+      };
+    
     case 'TRIGGER_PANIC_MODE':
       return {
         ...state,
@@ -143,25 +165,44 @@ const theatreReducer = (state, action) => {
           ...state.performance,
           inPanicMode: true,
           stageDirectionsOpacity: 1.0,
-          stageDirectionsVisible: true
+          stageDirectionsVisible: true,
+          panicModeTriggered: true // Track that panic mode was used
         }
       };
     
     case 'END_PANIC_MODE':
+      console.log('FIXING ISSUE 30: Opacity Never Restores');
       return {
         ...state,
         performance: {
           ...state.performance,
           inPanicMode: false,
-          stageDirectionsOpacity: state.performance.stageDirectionsOpacity
+          // Issue 30: Restore opacity to previous level before panic mode
+          stageDirectionsOpacity: state.performance.panicModeTriggered ? 
+            Math.max(0.1, state.performance.noLookStreak * 0.05) : // Calculate based on streak
+            state.performance.stageDirectionsOpacity
         }
       };
     
-    case 'RECORD_KEYSTROKE':
+    case 'RECORD_KEYSTROKE': {
+      console.log('FIXING ISSUE 21: Streak Too Punishing - implementing forgiveness');
       const isCorrect = action.payload.correct;
       const newCharCount = state.performance.characterCount + 1;
       const newErrorCount = isCorrect ? state.performance.errorCount : state.performance.errorCount + 1;
-      const newStreak = isCorrect ? state.performance.noLookStreak + 1 : 0;
+      
+      // Issue 21: Streak forgiveness - only reset streak after 3 consecutive errors
+      let newStreak;
+      if (isCorrect) {
+        newStreak = state.performance.noLookStreak + 1;
+      } else {
+        // Check if this is part of a consecutive error pattern
+        const consecutiveErrors = (state.performance.consecutiveErrors || 0) + 1;
+        if (consecutiveErrors >= 3) {
+          newStreak = 0; // Reset streak after 3 consecutive errors
+        } else {
+          newStreak = state.performance.noLookStreak; // Keep streak
+        }
+      }
       
       return {
         ...state,
@@ -170,10 +211,12 @@ const theatreReducer = (state, action) => {
           characterCount: newCharCount,
           errorCount: newErrorCount,
           noLookStreak: newStreak,
+          consecutiveErrors: isCorrect ? 0 : (state.performance.consecutiveErrors || 0) + 1,
           currentCharIndex: action.payload.charIndex || state.performance.currentCharIndex + 1,
           accuracy: ((newCharCount - newErrorCount) / newCharCount * 100)
         }
       };
+    }
     
     case 'COMPLETE_SCENE':
       return {
@@ -279,37 +322,73 @@ const theatreReducer = (state, action) => {
 export const TheatreProvider = ({ children }) => {
   const [state, dispatch] = useReducer(theatreReducer, initialState);
 
+  // Generate a unique continuation code with role parameter
+  const generateContinuationCode = (roleOverride = null) => {
+    const role = roleOverride || state.actor.role;
+    const rolePrefix = role ? role.substring(0, 4).toUpperCase() : 'GUES';
+    const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const timePart = Date.now().toString().slice(-4);
+    return `${rolePrefix}-${timePart}-${randomPart}`;
+  };
+
+  // Generate continuation code when role is set
   useEffect(() => {
-    const savedState = localStorage.getItem('typeCastingState');
-    if (savedState) {
+    if (state.actor.role && !state.actor.continuationCode) {
+      const code = generateContinuationCode(state.actor.role);
+      dispatch({ type: 'GENERATE_CODE', payload: code });
+      console.log('🎭 Auto-generated continuation code:', code);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.actor.role, state.actor.continuationCode]);
+
+  // Save state with continuation code
+  useEffect(() => {
+    if (state.actor.continuationCode) {
       try {
-        const parsed = JSON.parse(savedState);
-        dispatch({ type: 'LOAD_BACKSTAGE_PASS', payload: parsed });
+        const dataToSave = {
+          code: state.actor.continuationCode,
+          savedAt: Date.now(),
+          state: {
+            actor: state.actor,
+            production: {
+              currentAct: state.production.currentAct,
+              currentScene: state.production.currentScene
+            },
+            performance: {
+              ...state.performance,
+              started: null // Don't save active performance
+            },
+            theatre: state.theatre
+          }
+        };
+        
+        localStorage.setItem(`typecast-${state.actor.continuationCode}`, JSON.stringify(dataToSave));
+        console.log('🎭 Progress saved with code:', state.actor.continuationCode);
       } catch (e) {
-        console.error('Failed to load saved state:', e);
+        console.error('Failed to save progress:', e);
       }
     }
-  }, []);
-
-  useEffect(() => {
-    const saveState = () => {
-      try {
-        localStorage.setItem('typeCastingState', JSON.stringify({
-          actor: state.actor,
-          production: {
-            currentAct: state.production.currentAct,
-            currentScene: state.production.currentScene
-          },
-          theatre: state.theatre
-        }));
-      } catch (e) {
-        console.error('Failed to save state:', e);
-      }
-    };
-
-    const debounced = setTimeout(saveState, 1000);
-    return () => clearTimeout(debounced);
   }, [state]);
+
+  // Clean up old continuation codes (older than 7 days)
+  useEffect(() => {
+    try {
+      const keys = Object.keys(localStorage);
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      
+      keys.forEach(key => {
+        if (key.startsWith('typecast-')) {
+          const saved = JSON.parse(localStorage.getItem(key));
+          if (saved.savedAt && (now - saved.savedAt) > sevenDays) {
+            localStorage.removeItem(key);
+          }
+        }
+      });
+    } catch (e) {
+      console.error('Failed to clean up old codes:', e);
+    }
+  }, []);
 
   useEffect(() => {
     if (state.performance.inPanicMode) {
@@ -343,7 +422,46 @@ export const TheatreProvider = ({ children }) => {
       toggleSound: () => dispatch({ type: 'TOGGLE_SOUND' }),
       updateTheatreSettings: (settings) => dispatch({ type: 'UPDATE_THEATRE_SETTINGS', payload: settings }),
       navigateToScene: (act, scene) => dispatch({ type: 'NAVIGATE_TO_SCENE', payload: { act, scene } }),
-      resetPerformance: () => dispatch({ type: 'RESET_PERFORMANCE' })
+      resetPerformance: () => dispatch({ type: 'RESET_PERFORMANCE' }),
+      // Issue 30: Add action to restore opacity
+      restoreOpacity: () => {
+        console.log('FIXING ISSUE 30: Opacity Never Restores - manual restore');
+        dispatch({ 
+          type: 'SET_STAGE_DIRECTIONS_OPACITY', 
+          payload: Math.max(0.1, state.performance.noLookStreak * 0.05) 
+        });
+      },
+      // Continuation code functionality
+      generateContinuationCode: () => {
+        const code = generateContinuationCode();
+        dispatch({ type: 'GENERATE_CODE', payload: code });
+        console.log('🎭 Generated continuation code:', code);
+        // Store in window for testing
+        if (typeof window !== 'undefined') {
+          window.lastContinuationCode = code;
+        }
+        return code;
+      },
+      loadFromCode: (code) => {
+        try {
+          const saved = localStorage.getItem(`typecast-${code}`);
+          if (!saved) {
+            return { success: false, error: 'Invalid code or expired session.' };
+          }
+          
+          const parsed = JSON.parse(saved);
+          if (!parsed.state || !parsed.state.actor) {
+            return { success: false, error: 'Corrupted save data.' };
+          }
+          
+          // Restore the state
+          dispatch({ type: 'LOAD_FROM_CODE', payload: parsed.state });
+          return { success: true, data: parsed.state };
+        } catch (e) {
+          console.error('Failed to load from code:', e);
+          return { success: false, error: 'Failed to load progress.' };
+        }
+      }
     }
   };
 

@@ -109,8 +109,8 @@ class BackstagePass {
       
       localStorage.setItem('backstagePasses', JSON.stringify(passes));
       return true;
-    } catch (e) {
-      console.error('Failed to save backstage pass:', e);
+    } catch (err) {
+      console.error('Failed to save backstage pass:', err);
       return false;
     }
   }

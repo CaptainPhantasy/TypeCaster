@@ -18,6 +18,16 @@
     --script-text: #FFFFFF;
     --stage-direction: #8892B0;
     --whisper-text: #FFD700;
+    
+    /* Z-index hierarchy */
+    --z-base: 1;
+    --z-keyboard: 10;
+    --z-stage: 20;
+    --z-curtains: 30;
+    --z-menu: 40;
+    --z-modal: 50;
+    --z-tutorial: 60;
+    --z-celebration: 100;
   }
 
   body {
@@ -201,6 +211,12 @@
     margin-bottom: 20px;
     opacity: 0.8;
     font-size: 0.9rem;
+    /* Issue 31: Exercise Tips Cut Off - Fix truncation */
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.4;
   }
 
   .script-line {
@@ -348,7 +364,7 @@
 
   .curtain-left,
   .curtain-right {
-    @apply absolute top-0 w-[52%] h-full z-[100];
+    @apply fixed top-0 w-[55%] h-screen z-[100];
     background: linear-gradient(90deg,
       var(--velvet-shadow) 0%,
       var(--velvet-curtain) 10%,
@@ -360,12 +376,12 @@
   }
 
   .curtain-left {
-    @apply -left-[52%];
+    left: -55%;
     transform-origin: right center;
   }
 
   .curtain-right {
-    @apply -right-[52%];
+    right: -55%;
     transform-origin: left center;
   }
 
@@ -375,6 +391,14 @@
 
   .curtains-open .curtain-right {
     animation: openCurtainRight 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  .curtains-close .curtain-left {
+    animation: closeCurtainLeft 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  .curtains-close .curtain-right {
+    animation: closeCurtainRight 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
   /* ORCHESTRA PIT KEYBOARD */
@@ -534,9 +558,9 @@
 
   .director-note {
     @apply rounded-lg p-4;
-    background-color: rgba(74, 144, 226, 0.1);
-    border: 1px solid rgba(74, 144, 226, 0.3);
-    color: var(--directors-note);
+    background: rgba(10, 10, 10, 0.9);
+    color: #FFD700;
+    border: 2px solid rgba(255, 215, 0, 0.3);
   }
 
   .achievement-badge {
@@ -680,6 +704,64 @@
   100% { opacity: 0; transform: scale(1.2); }
 }
 
+/* Issue 27: Curtain Animations Missing */
+@keyframes openCurtainLeft {
+  0% { left: 0; }
+  100% { left: -55%; }
+}
+
+@keyframes openCurtainRight {
+  0% { right: 0; }
+  100% { right: -55%; }
+}
+
+@keyframes closeCurtainLeft {
+  0% { left: -55%; }
+  100% { left: 0; }
+}
+
+@keyframes closeCurtainRight {
+  0% { right: -55%; }
+  100% { right: 0; }
+}
+
+@keyframes keySpotlight {
+  0% {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.15);
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+  }
+  100% {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+  }
+}
+
+/* Issue 22: No Typing Feedback */
+@keyframes typingSuccess {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes typingError {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+.typing-success {
+  animation: typingSuccess 0.2s ease-out;
+}
+
+.typing-error {
+  animation: typingError 0.3s ease-out;
+}
+
 /* CELEBRATION EFFECTS */
 .applause-overlay {
   position: fixed;
@@ -795,41 +877,118 @@
 
 /* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
+  /* Issue 23: Mobile Text Too Small */
   .theatre-container {
-    margin: 20px 10px;
+    margin: 10px 5px;
     border-radius: 15px;
   }
   
   .production-title {
-    font-size: 3rem;
-    letter-spacing: 5px;
+    font-size: 2.5rem;
+    letter-spacing: 3px;
   }
   
   .title-star {
-    font-size: 2rem;
-    margin: 0 10px;
+    font-size: 1.8rem;
+    margin: 0 8px;
   }
   
   .keyboard-container {
-    transform: scale(0.85);
+    transform: scale(0.8);
     transform-origin: center;
   }
   
   .script-line {
-    font-size: 1.8rem;
+    font-size: 1.6rem; /* Increased from 1.8rem */
+    letter-spacing: 0.1em;
+    line-height: 1.4;
   }
   
   .stage-area {
-    padding: 40px 20px;
+    padding: 30px 15px;
+    min-height: 300px;
   }
   
   .orchestra-pit {
-    padding: 20px 15px;
+    padding: 15px 10px;
   }
   
   .keyboard-key {
-    padding: 8px 12px;
-    min-width: 35px;
-    min-height: 35px;
+    padding: 6px 10px;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 0.9rem;
+  }
+  
+  .performance-indicator {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .tempo-meter, .accuracy-spotlight {
+    padding: 15px 25px;
+  }
+  
+  .meter-value {
+    font-size: 2.5rem;
+  }
+}
+
+/* Issue 35: Tablet Layout Broken */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .theatre-container {
+    margin: 30px 20px;
+    max-width: 900px;
+  }
+  
+  .production-title {
+    font-size: 4rem;
+    letter-spacing: 8px;
+  }
+  
+  .script-line {
+    font-size: 2.2rem;
+  }
+  
+  .keyboard-container {
+    transform: scale(0.9);
+  }
+  
+  .stage-area {
+    padding: 50px 30px;
+  }
+  
+  .performance-indicator {
+    gap: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .production-title {
+    font-size: 2rem;
+    letter-spacing: 2px;
+  }
+  
+  .script-line {
+    font-size: 1.4rem;
+  }
+  
+  .keyboard-key {
+    padding: 4px 8px;
+    min-width: 28px;
+    min-height: 28px;
+    font-size: 0.8rem;
+  }
+  
+  .meter-value {
+    font-size: 2rem;
+  }
+  
+  /* Issue 31: Tips Cut Off */
+  .stage-direction {
+    font-size: 0.8rem;
+    margin-bottom: 15px;
+    padding: 0 10px;
+    text-align: center;
   }
 }

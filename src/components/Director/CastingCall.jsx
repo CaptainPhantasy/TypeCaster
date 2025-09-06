@@ -39,10 +39,14 @@ const AVAILABLE_ROLES = {
 };
 
 const CastingCall = ({ onComplete }) => {
-  const { state, actions } = useTheatre();
+  const { actions } = useTheatre();
   const [selectedRole, setSelectedRole] = useState(null);
   const [actorName, setActorName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showCodeEntry, setShowCodeEntry] = useState(false);
+  const [continuationCode, setContinuationCode] = useState('');
+  const [codeError, setCodeError] = useState('');
 
   const handleRoleSelect = (roleId) => {
     setSelectedRole(roleId);
@@ -54,12 +58,30 @@ const CastingCall = ({ onComplete }) => {
       actions.setActorRole(selectedRole, actorName);
       actions.setStageDirectionsOpacity(AVAILABLE_ROLES[selectedRole].stageDirectionsOpacity);
       
+      // Don't generate continuation code here - let it happen after state is set
+      
       setTimeout(() => {
         actions.openCurtains();
         if (onComplete) {
           onComplete(selectedRole);
         }
       }, 500);
+    }
+  };
+  
+  const handleCodeSubmit = () => {
+    setCodeError('');
+    const result = actions.loadFromCode(continuationCode.trim());
+    
+    if (result.success) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        if (onComplete) {
+          onComplete(result.data.actor.role);
+        }
+      }, 500);
+    } else {
+      setCodeError(result.error || 'Invalid continuation code. Please try again.');
     }
   };
 
@@ -85,8 +107,80 @@ const CastingCall = ({ onComplete }) => {
         </div>
 
         <div className="p-8">
+        
+        {/* Code Entry Section */}
+        {!selectedRole && !showCodeEntry && (
+          <div className="text-center mb-8">
+            <p className="text-gray-300 mb-4">Choose your theatrical typing persona</p>
+            <button
+              onClick={() => setShowCodeEntry(true)}
+              className="text-yellow-400 hover:text-yellow-300 underline text-sm transition-colors"
+            >
+              Have a continuation code? Enter it here →
+            </button>
+          </div>
+        )}
+        
+        {/* Continuation Code Entry */}
+        {showCodeEntry && !selectedRole && (
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-6 mb-8
+                        border-2 border-yellow-400/40 shadow-2xl stage-fade-in">
+            <h3 className="text-2xl font-bold text-yellow-400 mb-4 text-center">
+              Continue Your Performance
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="continuationCode" className="block text-sm font-medium text-amber-400 mb-2">
+                  Enter Your Continuation Code
+                </label>
+                <input
+                  id="continuationCode"
+                  type="text"
+                  value={continuationCode}
+                  onChange={(e) => setContinuationCode(e.target.value.toUpperCase())}
+                  placeholder="e.g., STAR-1234-ABCD"
+                  className="w-full px-4 py-3 bg-black/50 border border-yellow-400/30 
+                           rounded-lg text-white placeholder-gray-400 font-mono
+                           focus:outline-none focus:border-yellow-400 focus:ring-2 
+                           focus:ring-yellow-400/20 transition-all"
+                  autoFocus
+                />
+                {codeError && (
+                  <p className="text-red-400 text-sm mt-2">{codeError}</p>
+                )}
+              </div>
+              
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setShowCodeEntry(false);
+                    setContinuationCode('');
+                    setCodeError('');
+                  }}
+                  className="flex-1 px-6 py-3 bg-gray-800 hover:bg-gray-700 
+                           text-gray-400 rounded-lg transition-colors"
+                >
+                  Back
+                </button>
+                
+                <button
+                  onClick={handleCodeSubmit}
+                  disabled={!continuationCode.trim()}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-400 to-amber-400
+                           hover:from-amber-400 hover:to-yellow-400
+                           disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed
+                           text-black font-bold rounded-lg transition-all
+                           transform hover:scale-105 disabled:hover:scale-100"
+                >
+                  Continue Performance
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {!selectedRole ? (
+        {!selectedRole && !showCodeEntry ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {Object.entries(AVAILABLE_ROLES).map(([key, role]) => {
               const Icon = role.icon;
@@ -128,7 +222,7 @@ const CastingCall = ({ onComplete }) => {
               );
             })}
           </div>
-        ) : (
+        ) : selectedRole ? (
           <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-8 
                         border-2 border-yellow-400/40 shadow-2xl stage-fade-in">
             <div className="text-center mb-6">
@@ -187,21 +281,22 @@ const CastingCall = ({ onComplete }) => {
               </div>
             </div>
 
-            <div className="mt-6 p-4 bg-blue-900/10 border border-blue-400/30 rounded-lg">
-              <p className="text-sm text-blue-400">
-                <strong>Director's Note:</strong> {AVAILABLE_ROLES[selectedRole].description}. 
+            {/* Issue 16: Director's Note Contrast */}
+            <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-400/40 rounded-lg">
+              <p className="text-sm text-yellow-100">
+                <strong className="text-yellow-400">Director's Note:</strong> {AVAILABLE_ROLES[selectedRole].description}. 
                 Stage directions will be set to {Math.round(AVAILABLE_ROLES[selectedRole].stageDirectionsOpacity * 100)}% visibility.
               </p>
             </div>
           </div>
-        )}
+        ) : null}
 
         <div className="text-center mt-8">
           <p className="text-xs text-gray-400">
             Not sure which role to choose? The Rising Star is perfect for beginners!
           </p>
         </div>
-        </div>
+      </div>
       </div>
 
       <div className="marquee-lights mt-8">

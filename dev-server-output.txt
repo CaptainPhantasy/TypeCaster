@@ -1,0 +1,10 @@
+
+> type-casting@0.0.0 dev
+> vite
+
+
+  VITE v7.1.4  ready in 61 ms
+
+  ➜  Local:   http://localhost:5177/
+  ➜  Network: http://192.168.1.182:5177/
+  ➜  press h + enter to show help

@@ -4,7 +4,49 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Type Casting - Theatrical Typing Tutor
 
+⚠️ **CRITICAL: This is a JAVASCRIPT-ONLY project. DO NOT use TypeScript syntax!**
+
 A React-based typing tutor application that transforms learning touch typing into a dramatic performance journey.
+
+## 🙅‍♂️ TYPESCRIPT PREVENTION RULES
+
+**THIS PROJECT USES JAVASCRIPT (.js, .jsx) - NO TYPESCRIPT ALLOWED!**
+
+### ❌ NEVER use these TypeScript features:
+- Type annotations: `function foo(param: string)` ❌
+- Interfaces: `interface MyType {}` ❌  
+- Type assertions: `value as SomeType` or `<SomeType>value` ❌
+- Generic syntax: `Array<string>`, `Promise<void>` ❌
+- Enum declarations: `enum MyEnum {}` ❌
+- `.ts` or `.tsx` file extensions ❌
+- `import type` statements ❌
+- Optional chaining with types: `obj?.prop!` ❌
+
+### ✅ ALWAYS use JavaScript alternatives:
+- Remove type annotations: `function foo(param)` ✅
+- Use JSDoc for documentation: `/** @param {string} param */` ✅
+- Use `.js` and `.jsx` extensions ✅
+- Use runtime checks instead of compile-time types ✅
+- Use regular imports: `import { Component } from 'react'` ✅
+
+### 🚨 Common TypeScript Mistakes to Avoid:
+```javascript
+// ❌ WRONG (TypeScript)
+function typeText(page: Page, text: string, wpm: number = 40) {
+  const results: TestResults = { errors: [] as string[] };
+  return (window as any).someGlobal;
+}
+
+// ✅ CORRECT (JavaScript) 
+function typeText(page, text, wpm = 40) {
+  const results = { errors: [] };
+  return window.someGlobal;
+}
+```
+
+**If you accidentally create .ts/.tsx files, immediately rename them to .js/.jsx!**
+
+---
 
 ## Development Commands
 
@@ -105,7 +147,19 @@ Located in `/src/data/scripts/`:
 - Sound effects (Tone.js) installed but not integrated
 - PWA manifest not configured
 - Only Act 1 content implemented (3 scenes)
-- No test coverage
+- **JAVASCRIPT ONLY - No TypeScript allowed**
+
+### 🙅‍♂️ JAVASCRIPT-ONLY ENFORCEMENT
+
+**CRITICAL PROJECT RULES:**
+1. ❌ Never create .ts or .tsx files
+2. ❌ Never use type annotations (param: string)
+3. ❌ Never use 'as' type casting ((window as any))
+4. ❌ Never import TypeScript types (import type)
+5. ✅ Always use .js/.jsx extensions
+6. ✅ Use JSDoc comments for documentation
+7. ✅ Test with `npm run build` - it must pass
+8. ✅ Check `npm run lint` - fix all TypeScript-related errors
 
 ## Development TODO List
 

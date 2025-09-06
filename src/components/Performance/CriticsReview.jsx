@@ -1,6 +1,7 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
-const CriticsReview = ({ performance }) => {
+const CriticsReview = ({ performance, onClose, onNext, onRetry }) => {
   const getStarRating = (accuracy, tempo) => {
     if (accuracy >= 95 && tempo >= 50) return 5;
     if (accuracy >= 90 && tempo >= 40) return 4;
@@ -42,7 +43,17 @@ const CriticsReview = ({ performance }) => {
 
   return (
     <div className="critics-corner">
-      <div className="review-card">
+      <div className="review-card relative">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 p-2 bg-stage-black/50 hover:bg-stage-black/70 
+                   rounded-full transition-colors"
+          title="Close Review"
+        >
+          <X className="w-5 h-5 text-marquee-gold" />
+        </button>
+        
         <div className="stars">
           {[...Array(5)].map((_, i) => (
             <span key={i} className={i < stars ? 'star-filled' : 'star-empty'}>
@@ -59,6 +70,24 @@ const CriticsReview = ({ performance }) => {
         
         <div className="reviewer">
           — The Daily Typist
+        </div>
+        
+        {/* Action buttons */}
+        <div className="flex justify-center gap-4 mt-6">
+          <button
+            onClick={onRetry}
+            className="px-6 py-2 bg-velvet-curtain text-marquee-gold rounded-lg 
+                     hover:bg-velvet-curtain/80 transition-colors font-semibold"
+          >
+            Try Again
+          </button>
+          <button
+            onClick={onNext}
+            className="px-6 py-2 bg-marquee-gold text-stage-black rounded-lg 
+                     hover:bg-spotlight-yellow transition-colors font-semibold"
+          >
+            Next Scene
+          </button>
         </div>
       </div>
     </div>

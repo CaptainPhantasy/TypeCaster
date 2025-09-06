@@ -10,6 +10,9 @@ const CelebrationEffects = ({ show, type = 'applause' }) => {
         setVisible(false);
       }, 3000);
       return () => clearTimeout(timer);
+    } else {
+      // Immediately hide when show becomes false
+      setVisible(false);
     }
   }, [show]);
 

@@ -11,10 +11,6 @@ const BackstagePassDisplay = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    generateCurrentPass();
-  }, [state.actor, state.production]);
-
   const generateCurrentPass = () => {
     const userData = {
       role: state.actor.role,
@@ -36,6 +32,11 @@ const BackstagePassDisplay = () => {
     backstagePass.savePassToStorage(userData);
     actions.saveBackstagePass(code);
   };
+
+  // Generate pass when component mounts or when relevant state changes
+  useEffect(() => {
+    generateCurrentPass();
+  }, [state.actor.continuationCode, state.actor.role]);
 
   const copyToClipboard = async () => {
     try {
