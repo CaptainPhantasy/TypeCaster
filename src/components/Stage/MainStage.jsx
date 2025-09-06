@@ -75,12 +75,16 @@ const MainStage = ({
       clearTimeout(celebrationTimeoutRef.current);
     }
     
-    // Reset performance and maintain focus for the new exercise
-    actions.resetPerformance();
+    // Maintain focus for the new exercise after a brief delay
     if (!isPaused) {
-      setTimeout(maintainInputFocus, 100);
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          setInputFocused(true);
+        }
+      }, 100);
     }
-  }, [currentScript, actions, maintainInputFocus, isPaused]);
+  }, [currentScript, isPaused]);
 
   useEffect(() => {
     if (state.production.curtainsOpen && inputRef.current) {

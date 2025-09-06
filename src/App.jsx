@@ -245,6 +245,7 @@ function Theatre() {
       console.log('FIXING ISSUE 4: No Press Any Key Prompt - handling keydown');
       if (showPressAnyKey) {
         // Any key dismisses the press any key prompt
+        e.preventDefault(); // Prevent the key from being processed further
         setShowPressAnyKey(false);
         return;
       }
