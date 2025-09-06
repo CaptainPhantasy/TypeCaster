@@ -7,6 +7,9 @@ export default defineConfig({
   server: {
     host: true, // Listen on all addresses
     port: 5177,
-    strictPort: true
+    strictPort: true,
+    hmr: {
+      clientPort: 3002 // Match the port we're actually using
+    }
   }
 })

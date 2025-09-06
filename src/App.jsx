@@ -270,8 +270,7 @@ function Theatre() {
 
   // Handle ESC key for escape menu and press any key
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      console.log('FIXING ISSUE 4: No Press Any Key Prompt - handling keydown');
+  const handleKeyDown = (e) => {
       if (showPressAnyKey) {
         // Any key dismisses the press any key prompt
         e.preventDefault(); // Prevent the key from being processed further
@@ -335,7 +334,7 @@ function Theatre() {
 
   // Always show Casting Call as the landing page
   if (!state.actor.role) {
-    console.log('No role set, showing CastingCall');
+    // Reduced logging to prevent duplicate messages in strict mode
     return <CastingCall onComplete={(role) => {
       console.log('CastingCall completed with role:', role);
       setShowTutorial(true);

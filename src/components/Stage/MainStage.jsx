@@ -37,7 +37,6 @@ const MainStage = ({
 
   // Issue 2: Lost Input Focus
   const maintainInputFocus = useCallback(() => {
-    console.log('FIXING ISSUE 2: Lost Input Focus');
     if (inputRef.current && !isPaused) {
       inputRef.current.focus();
       setInputFocused(true);
@@ -66,7 +65,6 @@ const MainStage = ({
 
   // Reset all state when script changes (new scene/exercise)
   useEffect(() => {
-    console.log('Script changed, resetting MainStage state');
     setShowCelebration(false);
     setTypedText('');
     setCurrentIndex(0);
@@ -121,7 +119,6 @@ const MainStage = ({
 
   // Issue 11: Tempo Calculation Breaks - Use active typing time only
   const calculateTempo = useCallback(() => {
-    console.log('FIXING ISSUE 11: Tempo Calculation Breaks');
     if (!firstKeystrokeTime || typedText.length === 0) return 0;
     
     // Calculate active typing time (excluding pauses)
@@ -152,7 +149,6 @@ const MainStage = ({
   }, [typedText, firstKeystrokeTime, activeTypingTime, lastKeystrokeTime, isPaused]);
 
   const handleSceneComplete = useCallback(() => {
-    console.log('FIXING ISSUE 26: Accuracy Calc Wrong');
     const tempo = calculateTempo();
     
     // Issue 26: Fix accuracy calculation to handle edge cases
