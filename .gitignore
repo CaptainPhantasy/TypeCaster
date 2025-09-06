@@ -37,3 +37,10 @@ playwright/.cache/
 type-casting/
 **/dist/
 **/.DS_Store
+
+# Backup files
+*.tar.gz
+*.zip
+*.backup
+*backup*
+type-casting-backup-*
