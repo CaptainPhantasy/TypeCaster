@@ -43,7 +43,6 @@ import React, { useState, useEffect, Component } from 'react';
 import { TheatreProvider, useTheatre } from './contexts/TheatreContext';
 import CastingCall from './components/Director/CastingCall';
 import TutorialScreen from './components/Tutorial/TutorialScreen';
-import TutorialOverlay from './components/Tutorial/TutorialOverlay';
 import NavigationHeader from './components/Navigation/NavigationHeader';
 import SettingsPanel from './components/Settings/SettingsPanel';
 import MainStage from './components/Stage/MainStage';
