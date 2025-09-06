@@ -352,16 +352,11 @@ function Theatre() {
 
   return (
     <div className="min-h-screen">
-      <div className="theatre-container">{/* Removed padding-top since no fixed header */}
-
-        <TheatricalHeader
-          actTitle={`Act ${actOneScripts.act}: ${actOneScripts.title}`}
-          sceneName={scene?.name}
-          exerciseTitle={exercise?.title}
-        />
-        
-        {/* Integrated Header Controls */}
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-50">
+      <div className="theatre-container">
+        {/* Integrated Header Controls - Above theatrical banner */}
+        <div className="bg-gradient-to-r from-backstage-blue/95 to-dressing-room/95 
+                     backdrop-blur-sm border-b-2 border-marquee-gold/30 
+                     shadow-lg px-4 py-3 flex items-center justify-between z-50">
           {/* Left side - Home and Navigation */}
           <div className="flex items-center gap-2">
             <button
@@ -496,6 +491,12 @@ function Theatre() {
             </button>
           </div>
         </div>
+        
+        <TheatricalHeader
+          actTitle={`Act ${actOneScripts.act}: ${actOneScripts.title}`}
+          sceneName={scene?.name}
+          exerciseTitle={exercise?.title}
+        />
 
         <MainStage
           currentScript={getCurrentScript()}
