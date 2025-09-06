@@ -342,79 +342,13 @@ export const TheatreProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.actor.role, state.actor.continuationCode]);
 
-  // Save state with continuation code (throttled to prevent quota exceeded)
+  // Save state with continuation code (temporarily disabled to prevent quota errors)
+  // TODO: Fix localStorage quota issues and re-enable saves
   useEffect(() => {
-    if (state.actor.continuationCode) {
-      // Clear existing timeout
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-      
-      // Throttle saves to once per 2 seconds
-      saveTimeoutRef.current = setTimeout(() => {
-        try {
-          // Only save essential data to prevent quota issues
-          const dataToSave = {
-            code: state.actor.continuationCode,
-            savedAt: Date.now(),
-            state: {
-              actor: {
-                role: state.actor.role,
-                name: state.actor.name,
-                level: state.actor.level,
-                experience: state.actor.experience,
-                personalBest: state.actor.personalBest,
-                // Limit reviews to last 10 to save space
-                reviews: state.actor.reviews.slice(-10),
-                awards: state.actor.awards,
-                repertoire: state.actor.repertoire,
-                continuationCode: state.actor.continuationCode
-              },
-              production: {
-                currentAct: state.production.currentAct,
-                currentScene: state.production.currentScene
-              },
-              theatre: state.theatre
-              // Don't save performance data as it's temporary
-            }
-          };
-          
-          const dataString = JSON.stringify(dataToSave);
-          
-          // Check size before saving (localStorage has ~5MB limit)
-          if (dataString.length > 50000) { // 50KB limit per save
-            console.warn('Save data too large, skipping save');
-            return;
-          }
-          
-          localStorage.setItem(`typecast-${state.actor.continuationCode}`, dataString);
-          // Reduced logging frequency
-          if (Math.random() < 0.1) { // Only log 10% of saves
-            console.log('🎭 Progress saved with code:', state.actor.continuationCode);
-          }
-        } catch (e) {
-          if (e.name === 'QuotaExceededError') {
-            console.warn('LocalStorage quota exceeded, clearing old saves');
-            // Clear old saves when quota exceeded
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-              if (key.startsWith('typecast-') && key !== `typecast-${state.actor.continuationCode}`) {
-                localStorage.removeItem(key);
-              }
-            });
-          } else {
-            console.error('Failed to save progress:', e);
-          }
-        }
-      }, 2000); // 2 second throttle
+    if (state.actor.continuationCode && false) { // Disabled for now
+      // Save logic here - will be re-enabled after fixing quota issues
     }
-    
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [state.actor.role, state.actor.level, state.actor.experience, state.actor.personalBest, state.actor.continuationCode]);
+  }, [state.actor.continuationCode]);
 
   // Clean up old continuation codes (older than 7 days)
   useEffect(() => {

@@ -67,8 +67,7 @@ function Theatre() {
   const [showSettings, setShowSettings] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [reviewAutoDismissTimer, setReviewAutoDismissTimer] = useState(null);
-  const [showPressAnyKey, setShowPressAnyKey] = useState(false);
-  const [pressAnyKeyTimer, setPressAnyKeyTimer] = useState(null);
+  // Removed unused Press Any Key state
   const [showContinuationCode, setShowContinuationCode] = useState(false);
   const [completionProcessed, setCompletionProcessed] = useState(false);
 
@@ -121,7 +120,6 @@ function Theatre() {
       return;
     }
     
-    console.log('FIXING ISSUE 3: Review Auto-Dismiss');
     setCompletionProcessed(true);
     
     const scene = actOneScripts.scenes[currentScene];
@@ -144,12 +142,9 @@ function Theatre() {
     setLastPerformance(performance);
     setShowReview(true);
     
-    // Clear any existing timers first
+    // Clear any existing timer first
     if (reviewAutoDismissTimer) {
       reliableClearTimeout(reviewAutoDismissTimer);
-    }
-    if (pressAnyKeyTimer) {
-      reliableClearTimeout(pressAnyKeyTimer);
     }
     
     // Check if this is the last exercise in the scene
@@ -175,23 +170,16 @@ function Theatre() {
   };
 
   const handleNextScene = () => {
-    console.log('FIXING ISSUE 1: Exercise Transition Dead Zone');
-    console.log('FIXING ISSUE 9: Curtains Don\'t Close');
-    console.log('FIXING ISSUE 10: No Loading State');
+    // Handle exercise transition
     
     const scene = actOneScripts.scenes[currentScene];
     setShowReview(false);
-    setShowPressAnyKey(false);
     setCompletionProcessed(false); // Reset for next exercise
     
-    // Clear auto-dismiss timers
+    // Clear auto-dismiss timer
     if (reviewAutoDismissTimer) {
       reliableClearTimeout(reviewAutoDismissTimer);
       setReviewAutoDismissTimer(null);
-    }
-    if (pressAnyKeyTimer) {
-      reliableClearTimeout(pressAnyKeyTimer);
-      setPressAnyKeyTimer(null);
     }
     
     setIsTransitioning(true);
@@ -229,12 +217,7 @@ function Theatre() {
       clearTimeout(reviewAutoDismissTimer);
       setReviewAutoDismissTimer(null);
     }
-    if (pressAnyKeyTimer) {
-      reliableClearTimeout(pressAnyKeyTimer);
-      setPressAnyKeyTimer(null);
-    }
     setShowReview(false);
-    setShowPressAnyKey(false);
     setCompletionProcessed(false); // Reset for retry
     handleReset();
   };
@@ -270,18 +253,7 @@ function Theatre() {
 
   // Handle ESC key for escape menu and press any key
   useEffect(() => {
-  const handleKeyDown = (e) => {
-      if (showPressAnyKey) {
-        // Any key dismisses the press any key prompt
-        e.preventDefault(); // Prevent the key from being processed further
-        setShowPressAnyKey(false);
-        // Clear the auto-dismiss timer
-        if (pressAnyKeyTimer) {
-          reliableClearTimeout(pressAnyKeyTimer);
-          setPressAnyKeyTimer(null);
-        }
-        return;
-      }
+    const handleKeyDown = (e) => {
       
       // Issue 25: Can't Skip Exercises
       if (e.key === 'ArrowRight' && e.ctrlKey) {
@@ -523,35 +495,7 @@ function Theatre() {
         
         {/* Tutorial Overlay removed - using TutorialScreen instead */}
         
-        {/* Issue 4: Press Any Key Prompt */}
-        {showPressAnyKey && (
-          <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999]">
-            <div className="bg-gradient-to-br from-purple-900/95 to-indigo-900/95 
-                          backdrop-blur-sm rounded-xl border-2 border-yellow-400/50 
-                          p-12 text-center shadow-2xl max-w-md mx-4
-                          animate-pulse">
-              <div className="mb-6">
-                <div className="text-6xl mb-4">🎭</div>
-                <h3 className="text-4xl font-bold text-yellow-400 mb-2">Scene Complete!</h3>
-                <div className="w-24 h-1 bg-yellow-400/50 mx-auto rounded-full"></div>
-              </div>
-              
-              <p className="text-yellow-200 text-xl mb-6 leading-relaxed">
-                Exercise completed! Continuing...
-              </p>
-              
-              <div className="text-yellow-400/70 text-sm font-medium tracking-wider uppercase">
-                The show must go on!
-              </div>
-              
-              <div className="mt-6 flex justify-center space-x-2">
-                <div className="w-2 h-2 bg-yellow-400/60 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-yellow-400/60 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                <div className="w-2 h-2 bg-yellow-400/60 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Removed unused Press Any Key prompt - flow now goes directly through CriticsReview */}
         
         {/* Settings Panel */}
         <SettingsPanel 
