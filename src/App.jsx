@@ -43,7 +43,6 @@ import React, { useState, useEffect, Component } from 'react';
 import { TheatreProvider, useTheatre } from './contexts/TheatreContext';
 import CastingCall from './components/Director/CastingCall';
 import TutorialScreen from './components/Tutorial/TutorialScreen';
-import NavigationHeader from './components/Navigation/NavigationHeader';
 import SettingsPanel from './components/Settings/SettingsPanel';
 import MainStage from './components/Stage/MainStage';
 import VirtualKeyboard from './components/OrchestraPit/VirtualKeyboard';
@@ -52,7 +51,7 @@ import CriticsReview from './components/Performance/CriticsReview';
 import BackstagePassDisplay from './components/Backstage/BackstagePass';
 import ContinuationCode from './components/UI/ContinuationCode';
 import actOneScripts from './data/scripts/actOne.json';
-import { Play, Pause, RotateCcw, Save, Menu, X, Home, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { Play, Pause, RotateCcw, Save, Menu, X, Home, ChevronLeft, ChevronRight, Settings, HelpCircle } from 'lucide-react';
 import { reliableSetTimeout, reliableClearTimeout } from './utils/reliableTimer';
 
 function Theatre() {
@@ -353,48 +352,7 @@ function Theatre() {
 
   return (
     <div className="min-h-screen">
-      <div className="theatre-container pt-16">{/* Added padding-top for fixed header */}
-        {/* Navigation Header */}
-        <NavigationHeader
-          onBackToCasting={() => {
-            if (confirm('Return to Casting Call? Your progress will be saved.')) {
-              actions.setActorRole(null);
-            }
-          }}
-          currentAct={actOneScripts.act}
-          currentScene={currentScene + 1}
-          totalScenes={actOneScripts.scenes.length}
-          currentExercise={currentExercise + 1}
-          totalExercises={scene?.exercises?.length || 0}
-          sceneName={scene?.name}
-          exerciseName={exercise?.title}
-          onSceneSelect={navigateToScene}
-          onPreviousExercise={() => {
-            if (currentExercise > 0) {
-              navigateToScene(currentScene, currentExercise - 1);
-            } else if (currentScene > 0) {
-              const prevScene = actOneScripts.scenes[currentScene - 1];
-              navigateToScene(currentScene - 1, prevScene.exercises.length - 1);
-            }
-          }}
-          onNextExercise={() => {
-            if (currentExercise < scene.exercises.length - 1) {
-              navigateToScene(currentScene, currentExercise + 1);
-            } else if (currentScene < actOneScripts.scenes.length - 1) {
-              navigateToScene(currentScene + 1, 0);
-            }
-          }}
-          canGoPrevious={currentScene > 0 || currentExercise > 0}
-          canGoNext={currentScene < actOneScripts.scenes.length - 1 || currentExercise < (scene?.exercises?.length || 0) - 1}
-          unlockedScenes={actOneScripts.scenes.map((s) => ({
-            name: s.name,
-            unlocked: true // TODO: Check actual unlock status from state
-          }))}
-          onSettingsClick={() => setShowSettings(true)}
-          onHelpClick={() => setShowTutorial(true)}
-          hasCode={!!state.actor.continuationCode}
-          onShowCode={() => setShowContinuationCode(true)}
-        />
+      <div className="theatre-container">{/* Removed padding-top since no fixed header */}
 
         <TheatricalHeader
           actTitle={`Act ${actOneScripts.act}: ${actOneScripts.title}`}
@@ -402,38 +360,141 @@ function Theatre() {
           exerciseTitle={exercise?.title}
         />
         
-        <div className="absolute top-4 right-4 flex items-center gap-2 z-50">
-          <button
-            onClick={() => setIsPaused(!isPaused)}
-            className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
-                     rounded-lg transition-all border border-yellow-400/30
-                     hover:border-yellow-400/60 hover:scale-105"
-            title={isPaused ? "Resume" : "Pause"}
-          >
-            {isPaused ? <Play className="w-5 h-5 text-yellow-400" /> : 
-                       <Pause className="w-5 h-5 text-yellow-400" />}
-          </button>
+        {/* Integrated Header Controls */}
+        <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-50">
+          {/* Left side - Home and Navigation */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                if (confirm('Return to Casting Call? Your progress will be saved.')) {
+                  actions.setActorRole(null);
+                }
+              }}
+              className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
+                       rounded-lg transition-all border border-yellow-400/30
+                       hover:border-yellow-400/60 hover:scale-105"
+              title="Back to Casting Call"
+            >
+              <Home className="w-5 h-5 text-yellow-400" />
+            </button>
+            
+            <button
+              onClick={() => {
+                if (currentExercise > 0) {
+                  navigateToScene(currentScene, currentExercise - 1);
+                } else if (currentScene > 0) {
+                  const prevScene = actOneScripts.scenes[currentScene - 1];
+                  navigateToScene(currentScene - 1, prevScene.exercises.length - 1);
+                }
+              }}
+              disabled={!(currentScene > 0 || currentExercise > 0)}
+              className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       rounded-lg transition-all border border-yellow-400/30
+                       hover:border-yellow-400/60 hover:scale-105"
+              title="Previous Exercise (Ctrl+←)"
+            >
+              <ChevronLeft className="w-5 h-5 text-yellow-400" />
+            </button>
+            
+            <button
+              onClick={() => {
+                if (currentExercise < scene.exercises.length - 1) {
+                  navigateToScene(currentScene, currentExercise + 1);
+                } else if (currentScene < actOneScripts.scenes.length - 1) {
+                  navigateToScene(currentScene + 1, 0);
+                }
+              }}
+              disabled={!(currentScene < actOneScripts.scenes.length - 1 || currentExercise < (scene?.exercises?.length || 0) - 1)}
+              className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       rounded-lg transition-all border border-yellow-400/30
+                       hover:border-yellow-400/60 hover:scale-105"
+              title="Next Exercise (Ctrl+→)"
+            >
+              <ChevronRight className="w-5 h-5 text-yellow-400" />
+            </button>
+          </div>
           
-          <button
-            onClick={handleReset}
-            className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
-                     rounded-lg transition-all border border-yellow-400/30
-                     hover:border-yellow-400/60 hover:scale-105"
-            title="Reset Scene"
-          >
-            <RotateCcw className="w-5 h-5 text-yellow-400" />
-          </button>
+          {/* Center - Scene Info */}
+          <div className="text-center px-4">
+            <div className="text-xs text-marquee-gold/70 uppercase tracking-wider">
+              Act {actOneScripts.act} • Scene {currentScene + 1}/{actOneScripts.scenes.length}
+            </div>
+            <div className="text-sm font-semibold text-spotlight-yellow">
+              {scene?.name} {exercise?.title && `- ${exercise?.title}`}
+            </div>
+            <div className="text-xs text-marquee-gold/60">
+              Exercise {currentExercise + 1}/{scene?.exercises?.length || 0}
+            </div>
+          </div>
           
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
-                     rounded-lg transition-all border border-yellow-400/30
-                     hover:border-yellow-400/60 hover:scale-105"
-            title={showMenu ? "Close Menu" : "Open Menu"}
-          >
-            {showMenu ? <X className="w-5 h-5 text-yellow-400" /> : 
-                       <Menu className="w-5 h-5 text-yellow-400" />}
-          </button>
+          {/* Right side - Controls */}
+          <div className="flex items-center gap-2">
+            {state.actor.continuationCode && (
+              <button
+                onClick={() => setShowContinuationCode(true)}
+                className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
+                         rounded-lg transition-all border border-yellow-400/30
+                         hover:border-yellow-400/60 hover:scale-105"
+                title="Show Continuation Code"
+              >
+                <Save className="w-5 h-5 text-yellow-400" />
+              </button>
+            )}
+            
+            <button
+              onClick={() => setShowTutorial(true)}
+              className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
+                       rounded-lg transition-all border border-yellow-400/30
+                       hover:border-yellow-400/60 hover:scale-105"
+              title="Help (Ctrl+H)"
+            >
+              <HelpCircle className="w-5 h-5 text-yellow-400" />
+            </button>
+            
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
+                       rounded-lg transition-all border border-yellow-400/30
+                       hover:border-yellow-400/60 hover:scale-105"
+              title="Settings (Ctrl+S)"
+            >
+              <Settings className="w-5 h-5 text-yellow-400" />
+            </button>
+            
+            <button
+              onClick={() => setIsPaused(!isPaused)}
+              className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
+                       rounded-lg transition-all border border-yellow-400/30
+                       hover:border-yellow-400/60 hover:scale-105"
+              title={isPaused ? "Resume" : "Pause"}
+            >
+              {isPaused ? <Play className="w-5 h-5 text-yellow-400" /> : 
+                         <Pause className="w-5 h-5 text-yellow-400" />}
+            </button>
+            
+            <button
+              onClick={handleReset}
+              className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
+                       rounded-lg transition-all border border-yellow-400/30
+                       hover:border-yellow-400/60 hover:scale-105"
+              title="Reset Scene"
+            >
+              <RotateCcw className="w-5 h-5 text-yellow-400" />
+            </button>
+            
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-2 bg-backstage-blue/70 hover:bg-backstage-blue/90 
+                       rounded-lg transition-all border border-yellow-400/30
+                       hover:border-yellow-400/60 hover:scale-105"
+              title={showMenu ? "Close Menu" : "Open Menu"}
+            >
+              {showMenu ? <X className="w-5 h-5 text-yellow-400" /> : 
+                         <Menu className="w-5 h-5 text-yellow-400" />}
+            </button>
+          </div>
         </div>
 
         <MainStage
