@@ -336,7 +336,6 @@ function Theatre() {
   if (!state.actor.role) {
     // Reduced logging to prevent duplicate messages in strict mode
     return <CastingCall onComplete={(role) => {
-      console.log('CastingCall completed with role:', role);
       setShowTutorial(true);
       // Don't show continuation code immediately - wait for curtains to open
     }} />;
@@ -344,8 +343,7 @@ function Theatre() {
 
   // Issue 17: No Tutorial - Show tutorial first for new users
   if (showTutorial) {
-    console.log('FIXING ISSUE 17: No Tutorial');
-    return <TutorialScreen 
+    return <TutorialScreen
       isFirstTime={!localStorage.getItem('tutorialCompleted')}
       onClose={() => setShowTutorial(false)} 
     />;
