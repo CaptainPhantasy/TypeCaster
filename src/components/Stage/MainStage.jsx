@@ -19,6 +19,9 @@ const MainStage = ({
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationType, setCelebrationType] = useState('applause');
   const [spotlightPosition, setSpotlightPosition] = useState(0);
+  const [activeTypingTime, setActiveTypingTime] = useState(0);
+  const [lastKeystrokeTime, setLastKeystrokeTime] = useState(null);
+  const [firstKeystrokeTime, setFirstKeystrokeTime] = useState(null);
   const [showInstructions, setShowInstructions] = useState(() => {
     // Disabled redundant overlay - tutorial is handled elsewhere
     return false;
@@ -69,7 +72,10 @@ const MainStage = ({
     setCurrentIndex(0);
     setMistakes(new Set());
     setLastSpaceTime(0);
-    startTimeRef.current = Date.now();
+    setActiveTypingTime(0);
+    setFirstKeystrokeTime(null);
+    setLastKeystrokeTime(null);
+    startTimeRef.current = null; // Don't start timer until first keystroke
     
     if (celebrationTimeoutRef.current) {
       clearTimeout(celebrationTimeoutRef.current);
@@ -89,10 +95,8 @@ const MainStage = ({
   useEffect(() => {
     if (state.production.curtainsOpen && inputRef.current) {
       maintainInputFocus();
-      if (!startTimeRef.current) {
-        startTimeRef.current = Date.now();
-        actions.startPerformance();
-      }
+      // Don't auto-start timer here - wait for first keystroke
+      actions.startPerformance();
     }
   }, [state.production.curtainsOpen, actions, maintainInputFocus]);
 
@@ -115,27 +119,37 @@ const MainStage = ({
     };
   }, [maintainInputFocus]);
 
-  // Issue 11: Tempo Calculation Breaks
+  // Issue 11: Tempo Calculation Breaks - Use active typing time only
   const calculateTempo = useCallback(() => {
     console.log('FIXING ISSUE 11: Tempo Calculation Breaks');
-    if (!startTimeRef.current || typedText.length === 0) return 0;
+    if (!firstKeystrokeTime || typedText.length === 0) return 0;
     
-    const elapsedSeconds = (Date.now() - startTimeRef.current) / 1000;
+    // Calculate active typing time (excluding pauses)
+    let totalActiveSeconds = activeTypingTime / 1000;
+    
+    // Add current active session if user is still typing
+    if (lastKeystrokeTime && !isPaused) {
+      const currentSessionTime = (Date.now() - lastKeystrokeTime) / 1000;
+      // Only add if it's been less than 5 seconds since last keystroke (user still active)
+      if (currentSessionTime < 5) {
+        totalActiveSeconds += currentSessionTime;
+      }
+    }
     
     // Prevent division by zero and invalid calculations
-    if (elapsedSeconds <= 0) return 0;
+    if (totalActiveSeconds <= 0) return 0;
     
-    const minutes = elapsedSeconds / 60;
+    const minutes = totalActiveSeconds / 60;
     const words = typedText.length / 5;
     
     // Ensure we have a reasonable minimum time to prevent artificially high WPM
-    if (minutes < 0.1) return 0; // Less than 6 seconds
+    if (minutes < 0.05) return 0; // Less than 3 seconds of active typing
     
     const wpm = words / minutes;
     
     // Cap at reasonable maximum to prevent display issues
     return Math.min(Math.round(wpm), 999);
-  }, [typedText]);
+  }, [typedText, firstKeystrokeTime, activeTypingTime, lastKeystrokeTime, isPaused]);
 
   const handleSceneComplete = useCallback(() => {
     console.log('FIXING ISSUE 26: Accuracy Calc Wrong');
@@ -241,7 +255,10 @@ const MainStage = ({
         setTypedText('');
         setCurrentIndex(0);
         setMistakes(new Set());
-        startTimeRef.current = Date.now();
+        setActiveTypingTime(0);
+        setFirstKeystrokeTime(null);
+        setLastKeystrokeTime(null);
+        startTimeRef.current = null;
         actions.resetPerformance();
         return;
       }
@@ -290,6 +307,25 @@ const MainStage = ({
       const expectedChar = currentScript[currentIndex];
       const isCorrect = e.key === expectedChar;
       
+      const now = Date.now();
+      
+      // Track timing for accurate tempo calculation
+      if (!firstKeystrokeTime) {
+        // First keystroke - start the timer
+        setFirstKeystrokeTime(now);
+        setLastKeystrokeTime(now);
+      } else {
+        // Subsequent keystrokes - accumulate active typing time
+        if (lastKeystrokeTime) {
+          const timeSinceLastKey = now - lastKeystrokeTime;
+          // Only count time if it's reasonable (less than 5 seconds gap)
+          if (timeSinceLastKey < 5000) {
+            setActiveTypingTime(prev => prev + timeSinceLastKey);
+          }
+        }
+        setLastKeystrokeTime(now);
+      }
+      
       setTypedText(typedText + e.key);
       setCurrentIndex(currentIndex + 1);
       
@@ -326,13 +362,16 @@ const MainStage = ({
         }
       }
       
-      // Issue 33: setTimeout Throttling - use requestAnimationFrame for smoother updates
-      requestAnimationFrame(() => {
-        const currentTempo = calculateTempo();
-        if (currentTempo > 0) {
-          actions.updateTempo(currentTempo);
-        }
-      });
+      // Issue 33: Update tempo periodically, not on every keystroke for better performance
+      // Only update every 10 keystrokes to reduce calculations
+      if (currentIndex % 10 === 0 || currentIndex + 1 >= currentScript.length) {
+        requestAnimationFrame(() => {
+          const currentTempo = calculateTempo();
+          if (currentTempo > 0) {
+            actions.updateTempo(currentTempo);
+          }
+        });
+      }
       
       if (state.performance.noLookStreak > 0 && state.performance.noLookStreak % 20 === 0) {
         const currentOpacity = state.performance.stageDirectionsOpacity;
