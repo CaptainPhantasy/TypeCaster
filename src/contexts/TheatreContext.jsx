@@ -433,7 +433,7 @@ export const TheatreProvider = ({ children }) => {
       },
       // Continuation code functionality
       generateContinuationCode: () => {
-        const code = generateContinuationCode();
+        const code = generateContinuationCode(state.actor.role);
         dispatch({ type: 'GENERATE_CODE', payload: code });
         console.log('🎭 Generated continuation code:', code);
         // Store in window for testing

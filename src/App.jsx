@@ -43,6 +43,7 @@ import React, { useState, useEffect, Component } from 'react';
 import { TheatreProvider, useTheatre } from './contexts/TheatreContext';
 import CastingCall from './components/Director/CastingCall';
 import TutorialScreen from './components/Tutorial/TutorialScreen';
+import TutorialOverlay from './components/Tutorial/TutorialOverlay';
 import NavigationHeader from './components/Navigation/NavigationHeader';
 import SettingsPanel from './components/Settings/SettingsPanel';
 import MainStage from './components/Stage/MainStage';
@@ -56,10 +57,7 @@ import { Play, Pause, RotateCcw, Save, Menu, X, Home, ChevronLeft, ChevronRight,
 import { reliableSetTimeout, reliableClearTimeout } from './utils/reliableTimer';
 
 function Theatre() {
-  console.log('Theatre component rendering...');
   const { state, actions } = useTheatre();
-  console.log('Theatre state:', state);
-  console.log('Actor role:', state.actor.role);
   const [currentScene, setCurrentScene] = useState(0);
   const [currentExercise, setCurrentExercise] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
@@ -82,13 +80,15 @@ function Theatre() {
     }
   }, [state.actor.role]);
   
-  // Show continuation code only after role is established and curtains are open
+  // Show continuation code only once per session
   useEffect(() => {
-    // Only show on the first scene
-    if (state.actor.continuationCode && !showContinuationCode && state.actor.role && state.production.curtainsOpen && currentScene === 0 && currentExercise === 0) {
+    const codeShownThisSession = sessionStorage.getItem('continuationCodeShown');
+    // Only show on the first scene and if not already shown this session
+    if (state.actor.continuationCode && !codeShownThisSession && state.actor.role && state.production.curtainsOpen && currentScene === 0 && currentExercise === 0) {
       // Delay showing the code to avoid disrupting the flow
       const timer = setTimeout(() => {
         setShowContinuationCode(true);
+        sessionStorage.setItem('continuationCodeShown', 'true');
         // Auto-dismiss after 10 seconds
         setTimeout(() => {
           setShowContinuationCode(false);
@@ -96,7 +96,7 @@ function Theatre() {
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [state.actor.continuationCode, showContinuationCode, state.actor.role, state.production.curtainsOpen, currentScene, currentExercise]);
+  }, [state.actor.continuationCode, state.actor.role, state.production.curtainsOpen, currentScene, currentExercise]);
   
   // Hide continuation code when user starts typing
   useEffect(() => {
@@ -419,8 +419,7 @@ function Theatre() {
           }}
         />
         
-        {/* Tutorial Overlay - shows on first visit */}
-        <TutorialOverlay onClose={() => {}} />
+        {/* Tutorial Overlay removed - using TutorialScreen instead */}
         
         {/* Issue 4: Press Any Key Prompt */}
         {showPressAnyKey && (

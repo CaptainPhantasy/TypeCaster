@@ -112,13 +112,13 @@ const VirtualKeyboard = ({ activeKey = null, showFingerGuides = true }) => {
     }
   };
 
-  const renderKey = (key) => {
+  const renderKey = (key, uniqueKey) => {
     const displayText = key === 'Space' ? ' ' : key;
     const finger = FINGER_MAPPING[key.toLowerCase()] || FINGER_MAPPING[key];
     
     return (
       <div
-        key={key}
+        key={uniqueKey || key}
         className={`${getKeyClasses(key)} ${getKeyWidth(key)} h-12 
                    flex items-center justify-center font-mono`}
       >
@@ -153,7 +153,7 @@ const VirtualKeyboard = ({ activeKey = null, showFingerGuides = true }) => {
           <div className="space-y-2">
             {KEYBOARD_LAYOUT.map((row, rowIndex) => (
               <div key={rowIndex} className="flex justify-center gap-1">
-                {row.map(key => renderKey(key))}
+                {row.map((key, keyIndex) => renderKey(key, `${rowIndex}-${keyIndex}`))}
               </div>
             ))}
           </div>
