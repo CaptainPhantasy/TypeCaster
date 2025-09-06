@@ -69,6 +69,7 @@ function Theatre() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [reviewAutoDismissTimer, setReviewAutoDismissTimer] = useState(null);
   const [showPressAnyKey, setShowPressAnyKey] = useState(false);
+  const [pressAnyKeyTimer, setPressAnyKeyTimer] = useState(null);
   const [showContinuationCode, setShowContinuationCode] = useState(false);
 
   // Issue 17: Show tutorial automatically for first-time users
@@ -148,6 +149,12 @@ function Theatre() {
       // or when completing the entire act
       if (isLastExercise || isLastScene) {
         setShowPressAnyKey(true); // Issue 4: Show press any key prompt
+        // Auto-dismiss after 3 seconds for better UX
+        const pressKeyTimer = reliableSetTimeout(() => {
+          setShowPressAnyKey(false);
+          setPressAnyKeyTimer(null);
+        }, 3000);
+        setPressAnyKeyTimer(pressKeyTimer);
       }
     }, 10000);
     setReviewAutoDismissTimer(timer);
@@ -165,10 +172,14 @@ function Theatre() {
     setShowReview(false);
     setShowPressAnyKey(false);
     
-    // Clear auto-dismiss timer
+    // Clear auto-dismiss timers
     if (reviewAutoDismissTimer) {
       reliableClearTimeout(reviewAutoDismissTimer);
       setReviewAutoDismissTimer(null);
+    }
+    if (pressAnyKeyTimer) {
+      reliableClearTimeout(pressAnyKeyTimer);
+      setPressAnyKeyTimer(null);
     }
     
     setIsTransitioning(true);
@@ -205,6 +216,10 @@ function Theatre() {
     if (reviewAutoDismissTimer) {
       clearTimeout(reviewAutoDismissTimer);
       setReviewAutoDismissTimer(null);
+    }
+    if (pressAnyKeyTimer) {
+      reliableClearTimeout(pressAnyKeyTimer);
+      setPressAnyKeyTimer(null);
     }
     setShowReview(false);
     setShowPressAnyKey(false);
@@ -247,6 +262,11 @@ function Theatre() {
         // Any key dismisses the press any key prompt
         e.preventDefault(); // Prevent the key from being processed further
         setShowPressAnyKey(false);
+        // Clear the auto-dismiss timer
+        if (pressAnyKeyTimer) {
+          reliableClearTimeout(pressAnyKeyTimer);
+          setPressAnyKeyTimer(null);
+        }
         return;
       }
       
@@ -443,11 +463,15 @@ function Theatre() {
               </div>
               
               <p className="text-yellow-200 text-xl mb-6 leading-relaxed">
-                Press any key to continue your theatrical journey...
+                Scene completed! Continuing in 3 seconds...
               </p>
               
               <div className="text-yellow-400/70 text-sm font-medium tracking-wider uppercase">
                 The show must go on!
+              </div>
+              
+              <div className="text-yellow-400/50 text-xs mt-2">
+                (Press any key to continue now)
               </div>
               
               <div className="mt-6 flex justify-center space-x-2">
