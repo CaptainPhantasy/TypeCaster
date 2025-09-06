@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { X } from 'lucide-react';
 
 const CriticsReview = ({ performance, onClose, onNext, onRetry }) => {
@@ -10,7 +10,9 @@ const CriticsReview = ({ performance, onClose, onNext, onRetry }) => {
     return 1;
   };
 
-  const getReviewHeadline = (stars) => {
+  // Memoize headline selection to prevent rapid changes
+  const getReviewHeadline = useMemo(() => {
+    const stars = getStarRating(performance.accuracy, performance.tempo);
     const headlines = {
       5: ["A Tour de Force Performance!", "Breathtaking Keyboard Mastery!", "Standing Ovation Worthy!"],
       4: ["A Compelling Performance", "Shows Great Promise", "Nearly Steals the Show"],
@@ -19,8 +21,10 @@ const CriticsReview = ({ performance, onClose, onNext, onRetry }) => {
       1: ["Keep Practicing", "The Journey Begins", "Every Star Starts Somewhere"]
     };
     const options = headlines[stars] || headlines[1];
-    return options[Math.floor(Math.random() * options.length)];
-  };
+    // Use performance data to create stable selection (not random)
+    const index = Math.floor((performance.accuracy + performance.tempo) / 20) % options.length;
+    return options[index];
+  }, [performance.accuracy, performance.tempo]);
 
   const getReviewText = (accuracy, tempo, streak) => {
     if (accuracy >= 95) {
@@ -38,7 +42,7 @@ const CriticsReview = ({ performance, onClose, onNext, onRetry }) => {
   if (!performance) return null;
 
   const stars = getStarRating(performance.accuracy, performance.tempo);
-  const headline = getReviewHeadline(stars);
+  const headline = getReviewHeadline; // Already memoized above
   const reviewText = getReviewText(performance.accuracy, performance.tempo, performance.noLookStreak || 0);
 
   return (
